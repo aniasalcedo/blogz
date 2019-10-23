@@ -34,11 +34,19 @@ class User(db.Model):
         self.password = password
 
 
+@app.route('/')
+def home():
+    users = User.query.all()
+    return render_template('home.html', users=users)
+
+
 @app.route('/blog', methods=['POST', 'GET'])
 def index():
+    user_id = str(request.args.get('user'))
+    owner = Blogpost.query.filter_by(id=user_id).first()
     post_id = str(request.args.get('id'))
     mypost = Blogpost.query.get(post_id)
-    posts = Blogpost.query.all()
+    posts = Blogpost.query.filter_by(owner=owner).all()
     return render_template('index.html', posts=posts, mypost=mypost)
 
 
@@ -57,17 +65,24 @@ def require_login():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
+    username_error = ""
+    password_error = ""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user:
+        user = User.query.filter_by(
+            username=username).first()
+        users_password = User.query.filter_by(
+            password=password).first()
+        if not user:
+            return render_template('login.html', username_error="Username does not exist.")
+        if not users_password:
+            return render_template('login.html', password_error="Your username or password was incorrect.")
+        if not username_error and not password_error:
             session['username'] = username
             flash("Logged in")
             print(session)
             return redirect('/newpost')
-        else:
-            flash('User password incorrect, or user does not exist', 'error')
 
     return render_template('login.html')
 
@@ -109,12 +124,6 @@ def signup():
     return render_template('signup.html')
 
 
-@app.route('/logout')
-def logout():
-    del session['username']
-    return redirect('/blog')
-
-
 @app.route('/add-post', methods=['POST'])
 def addpost():
     if request.method == "POST":
@@ -137,14 +146,40 @@ def addpost():
             return render_template('newpost.html', title_error=title_error, post_error=post_error)
 
 
-# todo: write the individual-post @app.route. (hint: /blog?id={} )
-# @app.route('/blog?id={}', methods=['POST', 'GET'])
-# def indiv_post():
-#     if request.method == "POST":
-#         return redirect('/blog?id={}')
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/blog')
 
-
-# it only runs when we run main.py directly
+    # it only runs when we run main.py directly
 if __name__ == '__main__':
     app.run()
     # app.run(debug=True)
+
+
+# {% comment %} {%if not mypost%} {% if posts|length == 0 %}
+# <p>No posts yet</p>
+# {%else%}
+# <ul>
+#   {% for post in posts %}
+#   <li>
+#     <b
+#       ><font size="+3"
+#         ><a href="/blog?id={{ post.id }}">{{ post.title }}</a></font
+#       ></b
+#     >
+#     <div>
+#       <font size="+1">{{ post.post }}</font>
+#     </div>
+#     <hr />
+#   </li>
+#   {% endfor %}
+# </ul>
+# {% endif %} {% else %}
+# <h2>
+#   <center>{{ mypost.title }}</center>
+# </h2>
+# <p>
+#   <center>{{ mypost.post }}</center>
+# </p>
+# {%endif%} {%endblock%} {% endcomment %}
