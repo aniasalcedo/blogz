@@ -1,12 +1,15 @@
 {% extends "base.html" %} {% block content %}
 <h1>
-  <center>Build a Blog</center>
+  <center>BLOGZ</center>
 </h1>
 <hr />
 
-{% if not mypost %} {% if posts|length == 0 %}
-<p>No posts yet</p>
-{%else%}
+{% if not mypost %}
+  {% if posts|length == 0 %}
+  <p>No posts yet!</p>
+  <a href="/newpost">Write one!</a>
+{% else %}
+{% endif %}
 <ul>
   {% for post in posts %}
   <li>
@@ -17,16 +20,19 @@
     >
     <div>
       <font size="+1">{{ post.post }}</font>
+      <p id="author">Written by <a href="blog?user={{post.owner.id}}">{{post.owner.username}}</a>.</p>
     </div>
     <hr />
   </li>
   {% endfor %}
 </ul>
-{% endif %} {% else %}
+{% endif %}
+{% if mypost %}
 <h2>
   <center>{{ mypost.title }}</center>
 </h2>
 <p>
   <center>{{ mypost.post }}</center>
 </p>
-{%endif%} {%endblock%}
+{% endif %}
+{% endblock %}

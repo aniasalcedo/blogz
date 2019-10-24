@@ -40,16 +40,6 @@ def home():
     return render_template('home.html', users=users)
 
 
-@app.route('/blog', methods=['POST', 'GET'])
-def index():
-    user_id = str(request.args.get('user'))
-    owner = Blogpost.query.filter_by(id=user_id).first()
-    post_id = str(request.args.get('id'))
-    mypost = Blogpost.query.get(post_id)
-    posts = Blogpost.query.filter_by(owner=owner).all()
-    return render_template('index.html', posts=posts, mypost=mypost)
-
-
 @app.route('/newpost')
 def newpost():
     return render_template('newpost.html')
@@ -124,6 +114,27 @@ def signup():
     return render_template('signup.html')
 
 
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/blog')
+
+
+@app.route('/blog', methods=['POST', 'GET'])
+def index():
+    user_id = str(request.args.get('user'))
+
+    owner = Blogpost.query.filter_by(id=user_id).first()
+
+    post_id = str(request.args.get('id'))
+
+    posts = Blogpost.query.all()
+
+    mypost = Blogpost.query.get(post_id)
+
+    return render_template('index.html', posts=posts, mypost=mypost)
+
+
 @app.route('/add-post', methods=['POST'])
 def addpost():
     if request.method == "POST":
@@ -133,9 +144,9 @@ def addpost():
         post_error = ''
 
         if not title:
-            title_error = "please enter a title."
+            title_error = "Please enter a title."
         if not post:
-            post_error = "please enter some text."
+            post_error = "Please enter some text."
         if not title_error and not post_error:
             owner = User.query.filter_by(username=session['username']).first()
             newpost = Blogpost(title, post, owner)
@@ -145,41 +156,7 @@ def addpost():
         else:
             return render_template('newpost.html', title_error=title_error, post_error=post_error)
 
-
-@app.route('/logout')
-def logout():
-    del session['username']
-    return redirect('/blog')
-
     # it only runs when we run main.py directly
 if __name__ == '__main__':
     app.run()
     # app.run(debug=True)
-
-
-# {% comment %} {%if not mypost%} {% if posts|length == 0 %}
-# <p>No posts yet</p>
-# {%else%}
-# <ul>
-#   {% for post in posts %}
-#   <li>
-#     <b
-#       ><font size="+3"
-#         ><a href="/blog?id={{ post.id }}">{{ post.title }}</a></font
-#       ></b
-#     >
-#     <div>
-#       <font size="+1">{{ post.post }}</font>
-#     </div>
-#     <hr />
-#   </li>
-#   {% endfor %}
-# </ul>
-# {% endif %} {% else %}
-# <h2>
-#   <center>{{ mypost.title }}</center>
-# </h2>
-# <p>
-#   <center>{{ mypost.post }}</center>
-# </p>
-# {%endif%} {%endblock%} {% endcomment %}
