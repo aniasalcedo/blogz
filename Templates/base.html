@@ -10,10 +10,12 @@
   </head>
   <body>
     <div>
-      <a href="/">Home</a>
-      <a href="/blog">Main Blog Page</a>
+      <a href="/all">Home</a>
+      <a href="/index">Main Blog Page</a>
       <a href="/newpost">Add a Blog Entry</a>
+      {% if 'username' in session %}
       <a href="/logout">Log out</a>
+      {% endif %}
     </div>
 
     {% with messages = get_flashed_messages(with_categories=True)%}

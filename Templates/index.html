@@ -4,34 +4,23 @@
 </h1>
 <hr />
 
-{% if not mypost %}
-  {% if posts|length == 0 %}
-  <p>No posts yet! <a href="/newpost">Write one!</a> </p>
-{% else %}
-{% endif %}
+{% if posts[0] %}
 <ul>
   {% for post in posts %}
   <li>
     <b
       ><font size="+3"
-        ><a href="/blog?id={{ post.id }}">{{ post.title }}</a></font
+        ><a href="/detail?id={{ post.id }}">{{ post.title }}</a></font
       ></b
     >
     <div>
       <font size="+1">{{ post.post }}</font>
-      <p id="author">Written by <a href="blog?user={{post.owner.id}}">{{post.owner.username}}</a>.</p>
     </div>
     <hr />
   </li>
   {% endfor %}
 </ul>
-{% endif %}
-{% if mypost %}
-<h2>
-  <center>{{ mypost.title }}</center>
-</h2>
-<p>
-  <center>{{ mypost.post }}</center>
-</p>
+{% else %}
+  <p>No posts yet! <a href="/newpost">Write one!</a> </p>
 {% endif %}
 {% endblock %}

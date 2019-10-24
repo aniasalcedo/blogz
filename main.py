@@ -34,7 +34,7 @@ class User(db.Model):
         self.password = password
 
 
-@app.route('/')
+@app.route('/all')
 def home():
     users = User.query.all()
     return render_template('home.html', users=users)
@@ -47,7 +47,7 @@ def newpost():
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup']
+    allowed_routes = ['login', 'signup', 'index', 'all']
     print(session)
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
@@ -120,19 +120,23 @@ def logout():
     return redirect('/blog')
 
 
-@app.route('/blog', methods=['POST', 'GET'])
+@app.route('/index')
 def index():
-    user_id = str(request.args.get('user'))
+    user_id = request.args.get('userid')
+    if user_id:
+        owner = User.query.filter_by(id=user_id).first()
+        posts = Blogpost.query.filter_by(owner=owner)
+        return render_template('index.html', posts=posts)
+    else:
+        posts = Blogpost.query.all()
+        return render_template('index.html', posts=posts)
 
-    owner = Blogpost.query.filter_by(id=user_id).first()
 
-    post_id = str(request.args.get('id'))
-
-    posts = Blogpost.query.filter_by(owner=owner).all()
-
+@app.route('/detail')
+def detail():
+    post_id = request.args.get('id')
     mypost = Blogpost.query.get(post_id)
-
-    return render_template('index.html', posts=posts, mypost=mypost)
+    return render_template('post.html', post=mypost)
 
 
 @app.route('/add-post', methods=['POST'])
@@ -152,9 +156,10 @@ def addpost():
             newpost = Blogpost(title, post, owner)
             db.session.add(newpost)
             db.session.commit()
-            return redirect('/blog?id=' + str(newpost.id))
+            return redirect('/index')
         else:
             return render_template('newpost.html', title_error=title_error, post_error=post_error)
+
 
     # it only runs when we run main.py directly
 if __name__ == '__main__':
