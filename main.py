@@ -128,7 +128,7 @@ def index():
 
     post_id = str(request.args.get('id'))
 
-    posts = Blogpost.query.all()
+    posts = Blogpost.query.filter_by(owner=owner).all()
 
     mypost = Blogpost.query.get(post_id)
 
